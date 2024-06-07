@@ -1,83 +1,35 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>List Item</title>
-    <link rel="stylesheet" href="style.css">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link rel="stylesheet" href="styles/style.css">
+    <title>PHP21</title>
 </head>
 <body>
-<script src="script.js"></script>
-<?php
+    <div class="products">
+        <?php
 
-    $conn_string = "host=localhost port=5432 dbname=php20 user=postgres password=12345";
-    $conn = pg_connect($conn_string);
+        $conn_string = "host=localhost port=5432 dbname=php21 user=postgres password=12345";
+        $conn = pg_connect($conn_string);
 
-    $query = "SELECT * FROM menu";
-    $result = pg_query($conn, $query);
-    pg_close($conn);
-    $menu_db_table = pg_fetch_all($result);
-
-    $first_el_table = $menu_db_table[0];
-    $menu = ["name" => $first_el_table["name"], "hasChildren" => $first_el_table["has_children"], "items" => []];
-
-
-
-    $menu["items"] = buildMenu($menu_db_table, $first_el_table['id']);
-
-    function buildMenu($items, $parentId)
-    {
-        $item_childrens = [];
-        foreach ($items as $item)
-        {
-
-            if ($item["parent_id"] === $parentId)
-            {
-                $children = [];
-                $children["name"] = $item["name"];
-
-                if($item["has_children"] == "t")
-                {
-                    $children["hasChildren"] = true;
-                    $children["items"] = buildMenu($items, $item['id']);
-                }
-                elseif ($item["has_children"] == "f")
-                {
-                    $children["hasChildren"] = false;
-                    $children["items"] = [];
-                }
-
-                $item_childrens[] = $children;
+        $query = "SELECT * FROM products";
+        $result = pg_query($conn, $query);
+        pg_close($conn);
+        if (pg_num_rows($result) > 0) {
+            while($row = pg_fetch_assoc($result)) {
+                $product_html = " <a href='product.php?id=".$row['id']."'><div class='product'> 
+                    <img src='images/".$row['image']."' alt='Изображение не найдено'>
+                    <h2>".$row['name']."</h2>
+                    <h2>".$row['description']."</h2>
+                    <h2>Price: $".$row['price']."</h2>
+                    </div></a>";
+                echo $product_html;
             }
         }
-        return $item_childrens;
-    }
-
-    $menu_container = render($menu);
-    echo '<div class="list-items" id="list-items">' . $menu_container .'</div>';
-    function render($data)
-    {
-        $menu = '<div class="list-item list-item_open" data-parent><div class="list-item__inner">' .
-            '<img class="list-item__arrow" src="img/chevron-down.png" alt="chevron-down" data-open>' .
-            '<img class="list-item__folder" src="img/folder.png" alt="folder">' . '<span>' . $data['name'] . '</span>' .
-            '</div>' . '<div class="list-item__items">';
-
-        foreach ($data["items"] as $item)
-        {
-            if ($item["hasChildren"])
-            {
-                $menu .= render($item);
-            }
-            else
-            {
-                $menu .= '<div class="list-item__inner">' .
-                    '<img class="list-item__folder" src="img/folder.png" alt="folder">' . '<span>' . $item['name'] . '</span>' .
-                    '</div>';
-            }
-        }
-
-        $menu .= '</div></div>';
-        return $menu;
-    }
-?>
+        ?>
+    </div>
 </body>
 </html>
