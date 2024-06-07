@@ -1,19 +1,19 @@
 class Pizza {
     constructor(type, size) {
         const types = {
-            Margarita: { price: 500, calories: 300 },
-            Pepperoni: { price: 800, calories: 400 },
-            Bavarian: { price: 700, calories: 450 }
+            "Маргарита": { price: 500, calories: 300 },
+            "Пепперони": { price: 800, calories: 400 },
+            "Баварская": { price: 700, calories: 450 }
         };
 
         const sizes = {
-            Small: { price: 100, calories: 100 },
-            Large: { price: 200, calories: 200 }
+            Large: { price: 200, calories: 200 },
+            Small: { price: 100, calories: 100 }
         }
-
+        
+        this.kind = type;
         this.basePrice = types[type].price + sizes[size].price;
         this.baseCalories = types[type].calories + sizes[size].calories;
-        this.kind = type;
         this.toppings = [];
         this.size = size;  
     }
@@ -21,12 +21,12 @@ class Pizza {
     addTopping(topping) {
         const toppingDetails = {
             "Сливочная моцарелла": { price: this.size === "Large" ? 100 : 50, calories: 20  },
-            "Сырный борт": { price: this.size === "Large" ? 300 : 150, calories: 50 },
-            "Чедер и пармезан": { price: this.size === "Large" ? 300 : 150, calories: 50 }
+            "Сырный бортик": { price: this.size === "Large" ? 300 : 150, calories: 50 },
+            "Чеддр и пармезан": { price: this.size === "Large" ? 300 : 150, calories: 50 }
         };
         this.toppings.push({ topping, ...toppingDetails[topping] });
     }
-  
+
     calculatePrice() {
         return this.basePrice + this.toppings.reduce((sum, cur) => sum + cur.price, 0);
     }
@@ -34,26 +34,72 @@ class Pizza {
     calculateCalories() {
         return this.baseCalories + this.toppings.reduce((sum, cur) => sum + cur.calories, 0);
     }
-  
+
     removeTopping(topping) {
-        this.toppings = this.toppings.filter(t => t.topping !== topping);
+        let index = this.toppings.findIndex((top) => top.topping===topping);
+        this.toppings.splice(index,1);
+    }
+
+    getToppings() {
+        return this.toppings.map(t => t.topping);
     }
 
     getSize() {
         return this.size;
     }
 
-    getToppings() {
-        return this.toppings.map(t => t.topping);
-    }
-  
     getKind = () => this.kind
 }
 
+    let pizza;
+    function choosePizza(chosenPizza) 
+{
+    pizza = chosenPizza;
+    document.querySelectorAll('.pizza-item').forEach(item => item.style.border = '');
+    document.querySelectorAll('.quantity').forEach(item => item.innerText = '0');
+    document.getElementById(chosenPizza.getKind()).style.border='5px solid orange';
+    document.getElementById('add-2-cart').textContent = `${pizza.calculatePrice()} руб., (${pizza.calculateCalories()} кКал)`;
+    document.getElementById('radioSmall').checked = '0';
 
-let pizza = new Pizza("Margarita", "Large");
-pizza.addTopping("Сливочная моцарелла");
-pizza.addTopping("Сырный борт");
-console.log(`Итого: ${pizza.calculatePrice()} рублей`);
-console.log(`Всего кКал: ${pizza.calculateCalories()}`);
-console.log(`${pizza.getSize()}`)
+}
+
+function resizePizza()
+{
+    if (document.getElementById('radioSmall').checked == '1') {
+        pizza.size="Small";
+        pizza.basePrice-= 100;
+        pizza.baseCalories-= 100;
+        pizza.toppings.forEach((item)=> {item.price/=2;});
+    } 
+    else{
+        pizza.size="Large";
+        pizza.basePrice+= 100;
+        pizza.baseCalories+= 100;
+        pizza.toppings.forEach((item)=> {item.price*=2;});
+    }
+
+    document.getElementById('add-2-cart').textContent = `${pizza.calculatePrice()} руб., (${pizza.calculateCalories()} кКал)`;
+}
+
+function addTop(toppingOption)
+{
+    let option = toppingOption.parentNode.previousSibling.previousSibling.previousSibling.previousSibling;
+    let quantity = toppingOption.previousSibling.previousSibling;
+    console.log(quantity.innerText++);
+    let toppingName = option.textContent.trim();
+    console.log(toppingName);
+    pizza.addTopping(toppingName);
+    document.getElementById('add-2-cart').textContent = `${pizza.calculatePrice()} руб., (${pizza.calculateCalories()} кКал)`;
+}
+
+function remTop(toppingOption){
+    let option = toppingOption.parentNode.previousSibling.previousSibling.previousSibling.previousSibling;
+    let quantity = toppingOption.nextSibling.nextSibling;
+
+    if(+quantity.innerText>0) {
+    console.log(quantity.innerText--)
+    let toppingName = option.textContent.trim();
+    console.log(toppingName)
+    pizza.removeTopping(toppingName);
+    document.getElementById('add-2-cart').textContent = `${pizza.calculatePrice()} руб., (${pizza.calculateCalories()} кКал)`;
+}}
